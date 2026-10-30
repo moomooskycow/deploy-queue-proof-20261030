@@ -1,0 +1,25 @@
+name: deploy
+on:
+  push:
+    branches: [master]
+    paths: ['brand/**', '.github/workflows/deploy.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - name: Stand-in for build and smoke gate
+        run: sleep 50
+      - name: Stand-in for wrangler deploy plus readback of the checked-out revision
+        run: |
+          built="$(git rev-parse HEAD)"
+          git push --force origin "$built:refs/tags/deployed"
+          echo "event=$GITHUB_SHA built=$built" | tee -a "$GITHUB_STEP_SUMMARY"
